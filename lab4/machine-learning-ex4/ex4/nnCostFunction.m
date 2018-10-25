@@ -120,8 +120,8 @@ if lambda ~= 0
    new_Theta1(:,1) = [];
    new_Theta2(:,1) = [];
    
-   part1 = sum(sum(new_Theta1(2:end) .^ 2));
-   part2 = sum(sum(new_Theta2(2:end) .^ 2));
+   part1 = sum(sum(new_Theta1 .^ 2));
+   part2 = sum(sum(new_Theta2 .^ 2));
    
    regularizedCost = (lambda / (2*m)) * (part1 + part2);
    
