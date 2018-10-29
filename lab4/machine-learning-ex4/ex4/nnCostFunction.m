@@ -50,27 +50,22 @@ Theta2_grad = zeros(size(Theta2));
 % ex) z2 = Theta1 * a1
 %
 
-
-% ===== FEED FORWARD AND CALCULATE COST ===== %
-
-% Init p for the predictions
-p = zeros(size(X, 1), 1);
-
 % Add ones to the X data matrix, for bias
 X = [ones(m, 1) X];
 
 costSum = 0;
-
-
     
 for i = 1:m
     
-    real_y = zeros(num_labels, 1);
-    real_y(y(i)) = 1;
+    % Init the actual
+    actual = zeros(num_labels, 1);
+    actual(y(i)) = 1;
 
     
-% LAYER 2
-% 25 Nodes
+    % ----- FEED FORWARD ----- %
+    
+    % LAYER 2 - Feed forward
+    % 25 Nodes
     
     % Calculating z2 -> (25 x 1) vector
     z2 = Theta1 * X(i,:)';
@@ -79,64 +74,61 @@ for i = 1:m
     % Add a one to a2, for bias
     a2 = [1 ; a2];      % Now a (26 x 1) vector
 
-% OUTPUT LAYER
-% 10 Output Nodes
+    
+    % OUTPUT LAYER - Feed forward
+    % 10 Output Nodes
 
     % Calculating z3 -> (10 x 1) vector
     z3 = Theta2 * a2;
     % Pass z3 into activation function
     a3 = sigmoid(z3);       % Probabilities vector
     
-    otherA3 = log(a3);
-    yetAnotherA3 = log(1 - a3);
     
-    % result = (real_y' .* -1 * otherA3 - (1 - real_y') * yetAnotherA3);
-    
-    %fprintf('real_yT size: %f\n', size(real_y'));
-    %fprintf('otherA3 size: %f\n', size(otherA3));
-    %fprintf('yetAnotherA3 size: %f\n', size(yetAnotherA3)
-    
-    costSum = costSum + (real_y' .* -1 * otherA3 - (1 - real_y') * yetAnotherA3);
-    % save this value in a vector to sum up later
-    
-    % Find the max probability in the output vector
-    % hi -> the highest probability
-    % index -> the index of the highest probability (our label)
-    [hi, index] = max(a3);
-    
-    % Add our predicted label to vector p
-    p(i) = index;
+    % Calculate cost for the network
+    costSum = costSum + (actual' .* -1 * log(a3) - (1 - actual') * log(1 - a3));
+   
     
     
-    % compute error for output layer
-    error3 = zeros(10, 1);
-    error3 = a3 - real_y;
     
+    % ----- ERROR CALCULATION ----- %
+   
+    % CALCULATE ERROR - OUTPUT LAYER    
+    error3 = a3 - actual;
+   
     
-    %Theta2_no_bias = Theta2;
-    %Theta2_no_bias(:,hidden_layer_size + 1) = [];
+    % CALCULATE ERROR - HIDDEN LAYER
     
-   % make z2 26x1 to conform to matrix sizes
-   z2 = [0; z2];
+    % make z2 26x1 to conform to matrix sizes
+    z2 = [0; z2];
    
     error2 = (Theta2' * error3) .* sigmoidGradient(z2);
     error2(1) = [];
     
+    
+    
+    
+    
+    
+    % ----- BACKPROPAGATION ----- %
+    
+    % BACKPROPAGATION - Theta2
     Theta2_grad = Theta2_grad + error3 * a2';
-    a1 = X(i,:)';
+    
+    % BACKPROPAGATION - Theta1
+    a1 = X(i,:)';   % Get the values for the input layer (we don't 
+                    % explicitly save them during feed forward
     Theta1_grad = Theta1_grad + error2 * a1';
     
 end
 
+% Finalize cost
 costSum = costSum / m;
-
 J = costSum;
 
 
+% Regularize the cost if regularization is enabled
 if lambda ~= 0
-    
-   %fprintf('\nComputing regularized cost because lambda is non-zero\n');
-   
+       
    % Copy Theta1 and Theta2 in order to remove the first column
    new_Theta1 = Theta1;
    new_Theta2 = Theta2;
@@ -149,71 +141,28 @@ if lambda ~= 0
    
    regularizedCost = (lambda / (2*m)) * (part1 + part2);
    
-   %fprintf('RegularizedCost: %f\n', regularizedCost);
-   
+   % Add it to the cost
    J = J + regularizedCost;
 
 end
 
-
+% Finalize gradients
 Theta2_grad = Theta2_grad/m;
 Theta1_grad = Theta1_grad/m;
 
 
-%
-% Part 2: Implement the backpropagation algorithm to compute the gradients
-%         Theta1_grad and Theta2_grad. You should return the partial derivatives of
-%         the cost function with respect to Theta1 and Theta2 in Theta1_grad and
-%         Theta2_grad, respectively. After implementing Part 2, you can check
-%         that your implementation is correct by running checkNNGradients
-%
-%         Note: The vector y passed into the function is a vector of labels
-%               containing values from 1..K. You need to map this vector into a 
-%               binary vector of 1's and 0's to be used with the neural network
-%               cost function.
-%
-%         Hint: We recommend implementing backpropagation using a for-loop
-%               over the training examples if you are implementing it for the 
-%               first time.
-%
-
-
-
-
-
-
-
-
-
-
-
-% Part 3: Implement regularization with the cost function and gradients.
-%
-%         Hint: You can implement this around the code for
-%               backpropagation. That is, you can compute the gradients for
-%               the regularization separately and then add them to Theta1_grad
-%               and Theta2_grad from Part 2.
-%
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-% -------------------------------------------------------------
+% Use regularization on the gradients if it is enabled
+if lambda ~= 0
+    
+    % TODO: don't regularize bias
+    Theta2_grad = Theta2_grad + Theta2 .* (lambda/m);
+    Theta1_grad = Theta1_grad + Theta1 .* (lambda/m);
+    
+    % Replace regularized bias weight with original
+    Theta2_grad(:, 1) = Theta2(:, 1);
+    Theta1_grad(:, 1) = Theta1(:, 1);
+    
+end
 
 % =========================================================================
 
