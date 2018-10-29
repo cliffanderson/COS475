@@ -60,10 +60,12 @@ p = zeros(size(X, 1), 1);
 X = [ones(m, 1) X];
 
 costSum = 0;
+
+
     
 for i = 1:m
     
-    real_y = zeros(10, 1);
+    real_y = zeros(num_labels, 1);
     real_y(y(i)) = 1;
 
     
@@ -90,6 +92,9 @@ for i = 1:m
     
     % result = (real_y' .* -1 * otherA3 - (1 - real_y') * yetAnotherA3);
     
+    %fprintf('real_yT size: %f\n', size(real_y'));
+    %fprintf('otherA3 size: %f\n', size(otherA3));
+    %fprintf('yetAnotherA3 size: %f\n', size(yetAnotherA3)
     
     costSum = costSum + (real_y' .* -1 * otherA3 - (1 - real_y') * yetAnotherA3);
     % save this value in a vector to sum up later
@@ -101,6 +106,25 @@ for i = 1:m
     
     % Add our predicted label to vector p
     p(i) = index;
+    
+    
+    % compute error for output layer
+    error3 = zeros(10, 1);
+    error3 = a3 - real_y;
+    
+    
+    %Theta2_no_bias = Theta2;
+    %Theta2_no_bias(:,hidden_layer_size + 1) = [];
+    
+   % make z2 26x1 to conform to matrix sizes
+   z2 = [0; z2];
+   
+    error2 = (Theta2' * error3) .* sigmoidGradient(z2);
+    error2(1) = [];
+    
+    Theta2_grad = Theta2_grad + error3 * a2';
+    a1 = X(i,:)';
+    Theta1_grad = Theta1_grad + error2 * a1';
     
 end
 
@@ -151,6 +175,25 @@ end
 %               over the training examples if you are implementing it for the 
 %               first time.
 %
+
+for t = 1:m
+    
+    
+    
+    
+    
+end
+
+
+
+
+
+
+
+
+
+
+
 % Part 3: Implement regularization with the cost function and gradients.
 %
 %         Hint: You can implement this around the code for
