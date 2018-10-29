@@ -135,7 +135,7 @@ J = costSum;
 
 if lambda ~= 0
     
-   fprintf('\nComputing regularized cost because lambda is non-zero\n');
+   %fprintf('\nComputing regularized cost because lambda is non-zero\n');
    
    % Copy Theta1 and Theta2 in order to remove the first column
    new_Theta1 = Theta1;
@@ -149,14 +149,15 @@ if lambda ~= 0
    
    regularizedCost = (lambda / (2*m)) * (part1 + part2);
    
-   fprintf('RegularizedCost: %f\n', regularizedCost);
+   %fprintf('RegularizedCost: %f\n', regularizedCost);
    
    J = J + regularizedCost;
 
 end
 
 
-
+Theta2_grad = Theta2_grad/m;
+Theta1_grad = Theta1_grad/m;
 
 
 %
@@ -175,14 +176,6 @@ end
 %               over the training examples if you are implementing it for the 
 %               first time.
 %
-
-for t = 1:m
-    
-    
-    
-    
-    
-end
 
 
 
