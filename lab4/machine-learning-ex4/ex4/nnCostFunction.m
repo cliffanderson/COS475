@@ -154,13 +154,21 @@ Theta1_grad = Theta1_grad/m;
 % Use regularization on the gradients if it is enabled
 if lambda ~= 0
     
+    regTerm1 = (lambda/m).*new_Theta1;
+    regTerm1 = [zeros(hidden_layer_size,1) regTerm1];
+   
+    regTerm2 = (lambda/m).*new_Theta2;
+    regTerm2 = [zeros(num_labels,1) regTerm2];
+
+    Theta1_grad = Theta1_grad + regTerm1;
+    Theta2_grad = Theta2_grad + regTerm2;
+    
     % TODO: don't regularize bias
-    Theta2_grad = Theta2_grad + Theta2 .* (lambda/m);
-    Theta1_grad = Theta1_grad + Theta1 .* (lambda/m);
+    %Theta2_grad = Theta2_grad + Theta2 .* (lambda/m);
+    %Theta1_grad = Theta1_grad + Theta1 .* (lambda/m);
     
     % Replace regularized bias weight with original
-    Theta2_grad(:, 1) = Theta2(:, 1);
-    Theta1_grad(:, 1) = Theta1(:, 1);
+   
     
 end
 
