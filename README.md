@@ -1,1 +1,2 @@
-# COS475
+COS 475
+Made some changes!
