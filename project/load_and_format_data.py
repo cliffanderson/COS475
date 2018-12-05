@@ -29,13 +29,6 @@ def format_training_images(_training_images):
             for _x in range(0, 28):
                 image_array[image][_x][y] = _training_images[image*784 + y * 28 + _x]
 
-    # thestr = ''
-    # for y in range(0, 28):
-    #     for x in range(0, 28):
-    #         thestr = thestr + str(image_array[0][x][y])
-    #
-    # print('rbg values: ', thestr)
-
     return image_array
 
 
@@ -56,13 +49,6 @@ def create_low_res_training_images(orig_training_images):
     for image in range(0, 60000):
         for y in range(0, 14):
             for x in range(0, 14):
-                # a = orig_training_images[image][x*2 + 1][y*2]
-                # b = orig_training_images[image][x*2][y*2 + 1]
-                # c = orig_training_images[image][x*2 + 1][y*2 + 1]
-                # d = orig_training_images[image][x*2][y*2]
-                #
-                # print('a:', a, ' b:', b, ' c:', c, ' d:', d)
-                # print(image, ' ', x, ' ', y)
                 low_res_image_array[image][x][y] = (orig_training_images[image][x*2 + 1][y*2] +
                                                     orig_training_images[image][x*2][y*2 + 1] +
                                                     orig_training_images[image][x*2 + 1][y*2 + 1] +
@@ -77,13 +63,6 @@ def create_low_res_testing_images(orig_testing_images):
     for image in range(0, 10000):
         for y in range(0, 14):
             for x in range(0, 14):
-                # a = orig_training_images[image][x*2 + 1][y*2]
-                # b = orig_training_images[image][x*2][y*2 + 1]
-                # c = orig_training_images[image][x*2 + 1][y*2 + 1]
-                # d = orig_training_images[image][x*2][y*2]
-                #
-                # print('a:', a, ' b:', b, ' c:', c, ' d:', d)
-                # print(image, ' ', x, ' ', y)
                 low_res_image_array[image][x][y] = (orig_testing_images[image][x*2 + 1][y*2] +
                                                     orig_testing_images[image][x*2][y*2 + 1] +
                                                     orig_testing_images[image][x*2 + 1][y*2 + 1] +
