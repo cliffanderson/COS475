@@ -3,13 +3,14 @@ import numpy as np
 from array import array
 
 
-def load_training_images(file_name):
-    training_images_fh = open(file_name, 'rb')
-    magic_number, size, rows, columns = struct.unpack(">IIII", training_images_fh.read(16))
-    _training_images = array("B", training_images_fh.read())
-    training_images_fh.close()
+# Load test set of MNIST handwritten digit dataset
+def load_from_file(file_name):
+    images_fh = open(file_name, 'rb')
+    magic_number, size, rows, columns = struct.unpack(">IIII", images_fh.read(16))
+    images = array("B", images_fh.read())
+    images_fh.close()
 
-    return _training_images
+    return images
 
 
 def load_testing_images(file_name):
@@ -94,11 +95,11 @@ if os.path.isfile(testing_images_low_res_saved_array_file_name):
     os.remove(testing_images_low_res_saved_array_file_name)
 
 # Load & process
-training_images = load_training_images(training_images_file)
+training_images = load_from_file(training_images_file)
 training_images_formatted = format_training_images(training_images)
 training_images_low_res = create_low_res_training_images(training_images_formatted)
 
-testing_images = load_testing_images(testing_images_file)
+testing_images = load_from_file(testing_images_file)
 testing_images_formatted = format_testing_images(testing_images)
 testing_images_low_res = create_low_res_testing_images(testing_images_formatted)
 
