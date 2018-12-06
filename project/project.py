@@ -76,8 +76,7 @@ axes[2].set_title("Prediction")
 
 plt.show()
 
-# Export image data to text files to be fed into a Java program
-
+# Export image data as .png
 matplotlib.image.imsave('images/pred.png', d_predictions[1])
 matplotlib.image.imsave('images/orig.png', d_test_image_array[1])
 matplotlib.image.imsave('images/comp.png', d_test_low_res_image_array[1])
