@@ -1,56 +1,25 @@
 import tensorflow as tf
 from tensorflow import keras
-
+import load_and_format_data as lf
 import numpy as numpy
+import matplotlib
 import matplotlib.pyplot as plt
-
-import sys, os, struct
-from array import array
-from sys import path
-
-import pandas
-from keras.layers import Input, Dense, Flatten
-from keras.wrappers.scikit_learn import KerasRegressor
-from sklearn.model_selection import cross_val_score
-from sklearn.model_selection import KFold
-from sklearn.preprocessing import StandardScaler
-from sklearn.pipeline import Pipeline
 
 
 print("TensorFlow version: ", tf.__version__)
 
 
-#File names for training and test sets
-train_images_fn = 'train-images.npy'
-train_images_low_res_fn = 'train-images-low-res.npy'
-
-test_images_fn = 'test-images.npy'
-test_images_low_res_fn = 'test-images-low-res.npy'
+# Load MNIST dataset and compressed version
+(image_array, test_image_array) = lf.load_images()
+(low_res_image_array, test_low_res_image_array) = lf.load_low_res_images()
 
 
-#Load data into numpy arrays
-low_res_image_array = numpy.load(train_images_low_res_fn)
-image_array = numpy.load(train_images_fn)
-
-test_low_res_image_array = numpy.load(test_images_low_res_fn)
-test_image_array = numpy.load(test_images_fn)
-
-print(low_res_image_array.shape)
-print(image_array.shape)
-print(test_low_res_image_array.shape)
-print(test_image_array.shape)
+# Normalize pixel values
+image_array, test_image_array = image_array / 255.0, test_image_array / 255.0
+low_res_image_array, test_low_res_image_array = low_res_image_array / 255.0, test_low_res_image_array / 255.0
 
 
-
-# Normalize pixel values to fit range (0 - 1)
-low_res_image_array = low_res_image_array / 255.0
-image_array = image_array / 255.0
-
-test_low_res_image_array = test_low_res_image_array / 255.0
-test_image_array = test_image_array / 255.0
-
-
-#Configure the neural network model
+# Configure the neural network model
 model = keras.Sequential(
     [
         keras.layers.Dense(14*14),
@@ -60,58 +29,49 @@ model = keras.Sequential(
     ]
 )
 
-#Compile and fit the model to the training data
+
+# Compile and fit the model to the training data
 model.compile(optimizer=keras.optimizers.Adam(), loss='mse', metrics=['mse'])
 model.fit(low_res_image_array, image_array, epochs=1)
 
-#Test our model against the test set
-test_loss, test_acc = model.evaluate(test_low_res_image_array, test_image_array)
 
+# Test our model against the test set
+test_loss, test_acc = model.evaluate(test_low_res_image_array, test_image_array)
 print('test loss: ', test_loss)
 print('test accuracy: ', test_acc)
 
-#Generate higher-resolution images in an array of predictions
 
+# Generate high-resolution predictions
 predictions = model.predict(test_low_res_image_array);
-
 print('Predictions: ', len(predictions), ' x ', len(predictions[0]))
 
-# Export image data to a text file to feed into Java program
 
-image_num = 3
-
-an_image = predictions[image_num]
-an_image = an_image * 255.0
-f = open('new.txt', 'w')
-
-for i in range(0, 28*28):
-    # print(an_image[i])
-    f.write(str(an_image[i]))
-    f.write('\n')
-
-f.close()
+# Unwrap images to displayable format
+print("Unwrapping images...")
+d_predictions = lf.unwrap_array(predictions, 28, 28)
+d_test_image_array = lf.unwrap_array(test_image_array, 28, 28)
+d_test_low_res_image_array = lf.unwrap_array(test_low_res_image_array, 14, 14)
 
 
-f = open('orig.txt', 'w')
+# Creates a plot to display our images
+fig = plt.figure(figsize=(20, 20))
+rows = 5
+columns = 3
 
-orig_image = test_low_res_image_array[image_num]
-orig_image = orig_image * 255.0
+for i in range(0, rows):
+    ax1 = fig.add_subplot(rows, columns, i * 3 + 1)
+    plt.imshow(d_test_image_array[i])
 
-for i in range(0, 14*14):
-    f.write(str(orig_image[i]))
-    # print(orig_image[i])
-    f.write('\n')
+    ax2 = fig.add_subplot(rows, columns, i * 3 + 2)
+    plt.imshow(d_test_low_res_image_array[i])
 
-f.close()
+    ax3 = fig.add_subplot(rows, columns, i * 3 + 3)
+    plt.imshow(d_predictions[i])
 
+plt.show()
 
-f = open('orig_full_res.txt', 'w')
+# Export image data to text files to be fed into a Java program
 
-orig_full_res = test_image_array[image_num]
-orig_full_res = orig_full_res * 255.0
-
-for i in range(0, 28*28):
-    f.write(str(orig_full_res[i]))
-    f.write('\n')
-
-f.close()
+matplotlib.image.imsave('images/pred.png', d_predictions[1])
+matplotlib.image.imsave('images/orig.png', d_test_image_array[1])
+matplotlib.image.imsave('images/comp.png', d_test_low_res_image_array[1])

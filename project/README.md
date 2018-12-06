@@ -1,19 +1,25 @@
 # Increasing Image Resolution Using Machine Learning
 
-How to run network
-- In root of repository...
-- `python load_and_format_data.py`
-    - This formats dataset into numpy arrays
-- `python project.py`
-    - This trains the network and outputs some image data
+How to run network:
+~~~~~~~~~~~~~~~~~~~
+- In root of repository, run `python project.py`
+
+	- Loads and formats the MNIST handwritten digit dataset
+
+    - Loads/generates an algorithmically compressed version of the dataset
+
+    - Trains the neural network using these datasets
+
+    - Predicts the high resolution images for the test set
+
+    - Displays 10 of the predictions, alongside their corresponding original
+    	and compressed images from the test set
+
+    - Writes the image data to a text file
     
-    
-How to generate images
-- In src directory...
-- `javac MakeImages.java`
-    - This will compile the java code
-- `java MakeImages`
-    - This will create three images:
-        - origFullRes.png : Original 28x28 images
-        - orig.png : Lower resolution 14x14 images
-        - newImage.png : Prediction by the neural network using orig image
+    - Generate three images:
+        - comp.png : Compressed 14x14 image
+        - origFullRes.png : Original 28x28 image
+        - newImage.png : Prediction by the neural network based on compressed image
+
+

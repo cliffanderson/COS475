@@ -1,141 +1,114 @@
-import os, struct
+import os
+import tensorflow as tf
 import numpy as np
-from array import array
+
+# File names (to store numpy arrays to save time)
+train_fn = 'data/train-images.npy'
+test_fn = 'data/test-images.npy'
+low_res_train_fn = 'data/train-images-low-res.npy'
+low_res_test_fn = 'data/test-images-low-res.npy'
 
 
-# Load test set of MNIST handwritten digit dataset
-def load_from_file(file_name):
-    images_fh = open(file_name, 'rb')
-    magic_number, size, rows, columns = struct.unpack(">IIII", images_fh.read(16))
-    images = array("B", images_fh.read())
-    images_fh.close()
+# Load the MNIST dataset
+def load_images():
 
-    return images
+    mnist = tf.keras.datasets.mnist
+    (image_array, y_train),(test_image_array, y_test) = mnist.load_data()
 
-def format_training_images(_training_images):
-    image_array = np.zeros((60000, 28, 28))
+    train_data = None
+    test_data = None
 
-    for image in range(0, 60000):
-        for y in range(0, 28):
-            for _x in range(0, 28):
-                image_array[image][_x][y] = _training_images[image*784 + y * 28 + _x]
+    if not os.path.isfile(train_fn):
+        train_data = flatten_array(image_array)
+        np.save(train_fn, train_data)
+    else:
+        train_data = np.load(train_fn)
 
-    return image_array
+    if not os.path.isfile(test_fn):
+        test_data = flatten_array(test_image_array)
+        np.save(test_fn, test_data)
+    else:
+        test_data = np.load(test_fn)
 
-
-def format_testing_images(_testing_images):
-    image_array = np.zeros((10000, 28, 28))
-
-    for image in range(0, 10000):
-        for y in range(0, 28):
-            for _x in range(0, 28):
-                image_array[image][_x][y] = _testing_images[image*784 + y * 28 + _x]
-
-    return image_array
+    return (train_data, test_data)
 
 
-def create_low_res_training_images(orig_training_images):
-    low_res_image_array = np.zeros((60000, 14, 14))
+# Load the low resolution version of the MNIST dataset
+def load_low_res_images():
 
-    for image in range(0, 60000):
-        for y in range(0, 14):
-            for x in range(0, 14):
-                low_res_image_array[image][x][y] = (orig_training_images[image][x*2 + 1][y*2] +
-                                                    orig_training_images[image][x*2][y*2 + 1] +
-                                                    orig_training_images[image][x*2 + 1][y*2 + 1] +
-                                                    orig_training_images[image][x*2][y*2]) / 4
+    mnist = tf.keras.datasets.mnist
+    (image_array, y_train),(test_image_array, y_test) = mnist.load_data()
+
+    return (load_or_generate_low_res_images(low_res_train_fn, image_array), \
+        load_or_generate_low_res_images(low_res_test_fn, test_image_array))
+
+
+# Load low resolution version of MNIST dataset, or generate it if the file doesn't exist
+def load_or_generate_low_res_images(fn, data):
+
+    low_res_data = None
+
+    if not os.path.isfile(fn):
+        low_res_data = flatten_array(create_low_res_images(data))
+        np.save(fn, low_res_data)
+    else:
+        low_res_data = np.load(fn)
+
+    return low_res_data
+
+
+# Use original images to generate low resolution version
+def create_low_res_images(image_data):
+
+    size, orig_l, orig_w = image_data.shape;
+    l, w = int(orig_l / 2), int(orig_w / 2)
+
+    low_res_image_array = np.zeros((size, l, w))
+
+    #Generate compressed version of original dataset
+    for x in range(size):
+        y = 0
+        z = 0
+        while z < w:
+            while y < l:
+                low_res_image_array[x][y][z] = (int(image_data[x][(y * 2) + 1][(z * 2) + 1]) \
+                + int(image_data[x][(y * 2) + 1][z * 2]) \
+                + int(image_data[x][y * 2][(z * 2) + 1]) \
+                + int(image_data[x][y * 2][z * 2])) / 4.0
+                y += 1
+            y = 0
+            z += 1
 
     return low_res_image_array
 
 
-def create_low_res_testing_images(orig_testing_images):
-    low_res_image_array = np.zeros((10000, 14, 14))
+# Convert 3D array (img_num * l * w) to 2D (img_num * (l * w))   
+def flatten_array(images):
+    size = images.shape[0]
+    l = images.shape[1]
+    w = images.shape[2]
 
-    for image in range(0, 10000):
-        for y in range(0, 14):
-            for x in range(0, 14):
-                low_res_image_array[image][x][y] = (orig_testing_images[image][x*2 + 1][y*2] +
-                                                    orig_testing_images[image][x*2][y*2 + 1] +
-                                                    orig_testing_images[image][x*2 + 1][y*2 + 1] +
-                                                    orig_testing_images[image][x*2][y*2]) / 4
+    formatted_array = np.zeros((size, l * w))
+    for image in range(0, size):
+        for y in range(0, l):
+            for x in range(0, w):
+                formatted_array[image][y * l + x] = images[image][x][y]
 
-    return low_res_image_array
-
-
-training_images_file = 'train-images'
-testing_images_file = 'test-images'
-
-training_images_saved_array_file_name = 'train-images.npy'
-training_images_low_res_saved_array_file_name = 'train-images-low-res.npy'
-
-testing_images_saved_array_file_name = 'test-images.npy'
-testing_images_low_res_saved_array_file_name = 'test-images-low-res.npy'
-
-# Remove numpy files if they exist
-if os.path.isfile(training_images_saved_array_file_name):
-    os.remove(training_images_saved_array_file_name)
-
-if os.path.isfile(training_images_low_res_saved_array_file_name):
-    os.remove(training_images_low_res_saved_array_file_name)
-
-if os.path.isfile(testing_images_saved_array_file_name):
-    os.remove(testing_images_saved_array_file_name)
-
-if os.path.isfile(testing_images_low_res_saved_array_file_name):
-    os.remove(testing_images_low_res_saved_array_file_name)
-
-# Load & process
-training_images = load_from_file(training_images_file)
-training_images_formatted = format_training_images(training_images)
-training_images_low_res = create_low_res_training_images(training_images_formatted)
-
-testing_images = load_from_file(testing_images_file)
-testing_images_formatted = format_testing_images(testing_images)
-testing_images_low_res = create_low_res_testing_images(testing_images_formatted)
+    return formatted_array
 
 
-# from [60000, 28, 28] to [60000, 784]
-new_training_images_formatted = np.zeros((60000, 784))
-for image in range(0, 60000):
-    for y in range(0, 28):
-        for x in range(0, 28):
-            new_training_images_formatted[image][y*28 + x] = training_images_formatted[image][x][y]
+# Convert 2D array (img_num * (l * w)) to 3D (img_num * l * w) 
+def unwrap_array(images, l, w):
+    size = images.shape[0]
 
-training_images_formatted = new_training_images_formatted
+    formatted_array = np.zeros((size, l, w))
+    for image in range(0, size):
+        for y in range(0, l):
+            for x in range(0, w):
+                formatted_array[image][x][y] = images[image][y * l + x]
 
-
-# from [60000, 14, 14] to [60000, 196]
-new_training_images_low_res = np.zeros((60000, 196))
-for image in range(0, 60000):
-    for y in range(0, 14):
-        for x in range(0, 14):
-            new_training_images_low_res[image][y*14 + x] = training_images_low_res[image][x][y]
-
-training_images_low_res = new_training_images_low_res
+    return formatted_array
 
 
-# from [60000, 28, 28] to [60000, 784]
-new_testing_images_formatted = np.zeros((10000, 784))
-for image in range(0, 10000):
-    for y in range(0, 28):
-        for x in range(0, 28):
-            new_testing_images_formatted[image][y*28 + x] = testing_images_formatted[image][x][y]
-
-testing_images_formatted = new_testing_images_formatted
 
 
-# from [60000, 14, 14] to [60000, 196]
-new_testing_images_low_res = np.zeros((10000, 196))
-for image in range(0, 10000):
-    for y in range(0, 14):
-        for x in range(0, 14):
-            new_testing_images_low_res[image][y*14 + x] = testing_images_low_res[image][x][y]
-
-testing_images_low_res = new_testing_images_low_res
-
-
-# Save
-np.save(training_images_saved_array_file_name, training_images_formatted)
-np.save(training_images_low_res_saved_array_file_name, training_images_low_res)
-np.save(testing_images_saved_array_file_name, testing_images_formatted)
-np.save(testing_images_low_res_saved_array_file_name, testing_images_low_res)
