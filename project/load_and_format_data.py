@@ -12,7 +12,7 @@ low_res_test_fn = 'data/test-images-low-res.npy'
 #Unwrapped (3D) arrays
 uw_test_fn = 'data/uw-test-images.npy'
 uw_low_res_test_fn = 'data/uw-test-images-low-res.npy'
-uw_predictions = 'data/uw-predictions'
+uw_predictions_fn = 'data/uw-predictions'
 
 
 # Load the MNIST dataset
@@ -114,7 +114,7 @@ def unwrap_array(images, l, w, arr_type):
     elif arr_type == 'c':
         fn = uw_low_res_test_fn
     elif arr_type == 'p':
-        fn = uw_predictions
+        fn = uw_predictions_fn
     else:
         fn = ""
 
@@ -122,7 +122,7 @@ def unwrap_array(images, l, w, arr_type):
     size = images.shape[0]
 
     # If file does not exist, unwrap array manually
-    if not os.path.isfile(fn):
+    if not os.path.isfile(fn) or arr_type == 'p':
         formatted_array = np.zeros((size, l, w))
         for image in range(0, size):
             for y in range(0, l):
