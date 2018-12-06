@@ -54,7 +54,7 @@ d_test_low_res_image_array = lf.unwrap_array(test_low_res_image_array, 14, 14)
 
 
 # Creates a plot to display our images
-fig = plt.figure(figsize=(20, 20))
+fig = plt.figure(figsize=(15, 15))
 rows = 5
 columns = 3
 
@@ -67,6 +67,12 @@ for i in range(0, rows):
 
     ax3 = fig.add_subplot(rows, columns, i * 3 + 3)
     plt.imshow(d_predictions[i])
+
+#Label columns
+axes = fig.get_axes()
+axes[0].set_title("Original")
+axes[1].set_title("Compressed")
+axes[2].set_title("Prediction")
 
 plt.show()
 
