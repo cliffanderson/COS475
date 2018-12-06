@@ -12,16 +12,6 @@ def load_from_file(file_name):
 
     return images
 
-
-def load_testing_images(file_name):
-    testing_images_fh = open(file_name, 'rb')
-    magic_number, size, rows, columns = struct.unpack(">IIII", testing_images_fh.read(16))
-    _testing_images = array("B", testing_images_fh.read())
-    testing_images_fh.close()
-
-    return _testing_images
-
-
 def format_training_images(_training_images):
     image_array = np.zeros((60000, 28, 28))
 
