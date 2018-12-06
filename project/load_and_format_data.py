@@ -3,10 +3,16 @@ import tensorflow as tf
 import numpy as np
 
 # File names (to store numpy arrays to save time)
+#Flattened (2D) arrays
 train_fn = 'data/train-images.npy'
 test_fn = 'data/test-images.npy'
 low_res_train_fn = 'data/train-images-low-res.npy'
 low_res_test_fn = 'data/test-images-low-res.npy'
+
+#Unwrapped (3D) arrays
+uw_test_fn = 'data/uw-test-images.npy'
+uw_low_res_test_fn = 'data/uw-test-images-low-res.npy'
+uw_predictions = 'data/uw-predictions'
 
 
 # Load the MNIST dataset
@@ -98,17 +104,35 @@ def flatten_array(images):
 
 
 # Convert 2D array (img_num * (l * w)) to 3D (img_num * l * w) 
-def unwrap_array(images, l, w):
+def unwrap_array(images, l, w, arr_type):
+    
+    fn = None
+
+    # o (Original), c (Compressed), p (Prediction)
+    if arr_type == 'o':
+        fn = uw_test_fn
+    elif arr_type == 'c':
+        fn = uw_low_res_test_fn
+    elif arr_type == 'p':
+        fn = uw_predictions
+    else:
+        fn = ""
+
+    formatted_array = None
     size = images.shape[0]
 
-    formatted_array = np.zeros((size, l, w))
-    for image in range(0, size):
-        for y in range(0, l):
-            for x in range(0, w):
-                formatted_array[image][x][y] = images[image][y * l + x]
+    # If file does not exist, unwrap array manually
+    if not os.path.isfile(fn):
+        formatted_array = np.zeros((size, l, w))
+        for image in range(0, size):
+            for y in range(0, l):
+                for x in range(0, w):
+                    formatted_array[image][x][y] = images[image][y * l + x]
+
+        np.save(fn, formatted_array)
+
+    # If file exists, load numpy array from file
+    else:
+        formatted_array = np.load(fn)
 
     return formatted_array
-
-
-
-

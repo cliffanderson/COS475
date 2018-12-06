@@ -48,9 +48,9 @@ print('Predictions: ', len(predictions), ' x ', len(predictions[0]))
 
 # Unwrap images to displayable format
 print("Unwrapping images...")
-d_predictions = lf.unwrap_array(predictions, 28, 28)
-d_test_image_array = lf.unwrap_array(test_image_array, 28, 28)
-d_test_low_res_image_array = lf.unwrap_array(test_low_res_image_array, 14, 14)
+d_predictions = lf.unwrap_array(predictions, 28, 28, 'p')
+d_test_image_array = lf.unwrap_array(test_image_array, 28, 28, 'c')
+d_test_low_res_image_array = lf.unwrap_array(test_low_res_image_array, 14, 14, 'o')
 
 
 # Creates a plot to display our images
@@ -68,7 +68,7 @@ for i in range(0, rows):
     ax3 = fig.add_subplot(rows, columns, i * 3 + 3)
     plt.imshow(d_predictions[i])
 
-#Label columns
+# Label columns
 axes = fig.get_axes()
 axes[0].set_title("Original")
 axes[1].set_title("Compressed")
