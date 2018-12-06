@@ -32,7 +32,7 @@ model = keras.Sequential(
 
 # Compile and fit the model to the training data
 model.compile(optimizer=keras.optimizers.Adam(), loss='mse', metrics=['mse'])
-model.fit(low_res_image_array, image_array, epochs=1)
+model.fit(low_res_image_array, image_array, epochs=3)
 
 
 # Test our model against the test set
