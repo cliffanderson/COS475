@@ -34,7 +34,7 @@ model = keras.Sequential(
 
 # Compile and fit the model to the training data
 model.compile(optimizer=keras.optimizers.Adam(), loss='mse', metrics=['mse'])
-model.fit(low_res_train_data, train_data, epochs=3)
+model.fit(low_res_train_data, train_data, epochs=1)
 
 
 # Test our model against the test set
