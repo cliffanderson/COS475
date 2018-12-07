@@ -8,16 +8,19 @@ import matplotlib.pyplot as plt
 
 print("TensorFlow version: ", tf.__version__)
 
+print("Loading MNIST...")
 
 # Load MNIST dataset and compressed version
 (image_array, test_image_array) = lf.load_images()
 (low_res_image_array, test_low_res_image_array) = lf.load_low_res_images()
 
+print("Normalizing pixel values...")
 
 # Normalize pixel values
 image_array, test_image_array = image_array / 255.0, test_image_array / 255.0
 low_res_image_array, test_low_res_image_array = low_res_image_array / 255.0, test_low_res_image_array / 255.0
 
+print("Configuring and training model...")
 
 # Configure the neural network model
 model = keras.Sequential(
