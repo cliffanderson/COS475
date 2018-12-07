@@ -2,36 +2,36 @@ import os
 import tensorflow as tf
 import numpy as np
 
-# File names (to store numpy arrays to save time)
-#Flattened (2D) arrays
-train_fn = 'data/train-images.npy'
-test_fn = 'data/test-images.npy'
-low_res_train_fn = 'data/train-images-low-res.npy'
-low_res_test_fn = 'data/test-images-low-res.npy'
+### File names (to store numpy arrays to save time) ###
 
-#Unwrapped (3D) arrays
-uw_test_fn = 'data/uw-test-images.npy'
-uw_low_res_test_fn = 'data/uw-test-images-low-res.npy'
-uw_predictions_fn = 'data/uw-predictions'
+# Numpy files where MNIST dataset is stored ()
+train_fn = 'data/train.npy'
+test_fn = 'data/test.npy'
+low_res_train_fn = 'data/low-res-train.npy'
+low_res_test_fn = 'data/low-res-test.npy'
 
 
-# Load the MNIST dataset
+# Load the MNIST dataset and returns it as a (60000, 784) and a (10000, 784) numpy array
 def load_images():
 
     mnist = tf.keras.datasets.mnist
     (image_array, y_train),(test_image_array, y_test) = mnist.load_data()
 
-    train_data = None
-    test_data = None
+    train_data = np.array(image_array)
+    test_data = np.array(test_image_array)
+
+    (size, l, w) = image_array.shape
 
     if not os.path.isfile(train_fn):
-        train_data = flatten_array(image_array)
+        train_data = np.reshape(train_data, (size, (l * w),))
         np.save(train_fn, train_data)
     else:
         train_data = np.load(train_fn)
 
+    (size, l, w) = test_image_array.shape
+
     if not os.path.isfile(test_fn):
-        test_data = flatten_array(test_image_array)
+        test_data = np.reshape(test_data, (size, (l * w),))
         np.save(test_fn, test_data)
     else:
         test_data = np.load(test_fn)
@@ -55,7 +55,9 @@ def load_or_generate_low_res_images(fn, data):
     low_res_data = None
 
     if not os.path.isfile(fn):
-        low_res_data = flatten_array(create_low_res_images(data))
+        low_res_data = create_low_res_images(data)
+        (size, l, w) = low_res_data.shape
+        low_res_data = np.reshape(low_res_data, (size, (l * w),))
         np.save(fn, low_res_data)
     else:
         low_res_data = np.load(fn)
@@ -86,53 +88,3 @@ def create_low_res_images(image_data):
             z += 1
 
     return low_res_image_array
-
-
-# Convert 3D array (img_num * l * w) to 2D (img_num * (l * w))   
-def flatten_array(images):
-    size = images.shape[0]
-    l = images.shape[1]
-    w = images.shape[2]
-
-    formatted_array = np.zeros((size, l * w))
-    for image in range(0, size):
-        for y in range(0, l):
-            for x in range(0, w):
-                formatted_array[image][y * l + x] = images[image][x][y]
-
-    return formatted_array
-
-
-# Convert 2D array (img_num * (l * w)) to 3D (img_num * l * w) 
-def unwrap_array(images, l, w, arr_type):
-    
-    fn = None
-
-    # o (Original), c (Compressed), p (Prediction)
-    if arr_type == 'o':
-        fn = uw_test_fn
-    elif arr_type == 'c':
-        fn = uw_low_res_test_fn
-    elif arr_type == 'p':
-        fn = uw_predictions_fn
-    else:
-        fn = ""
-
-    formatted_array = None
-    size = images.shape[0]
-
-    # If file does not exist, unwrap array manually
-    if not os.path.isfile(fn) or arr_type == 'p':
-        formatted_array = np.zeros((size, l, w))
-        for image in range(0, size):
-            for y in range(0, l):
-                for x in range(0, w):
-                    formatted_array[image][x][y] = images[image][y * l + x]
-
-        np.save(fn, formatted_array)
-
-    # If file exists, load numpy array from file
-    else:
-        formatted_array = np.load(fn)
-
-    return formatted_array

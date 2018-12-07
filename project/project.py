@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow import keras
 import load_and_format_data as lf
-import numpy as numpy
+import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 
@@ -48,9 +48,10 @@ print('Predictions: ', len(predictions), ' x ', len(predictions[0]))
 
 # Unwrap images to displayable format
 print("Unwrapping images...")
-d_predictions = lf.unwrap_array(predictions, 28, 28, 'p')
-d_test_image_array = lf.unwrap_array(test_image_array, 28, 28, 'c')
-d_test_low_res_image_array = lf.unwrap_array(test_low_res_image_array, 14, 14, 'o')
+
+d_predictions = np.reshape(predictions, (predictions.shape[0], 28, 28,))
+d_test_image_array = np.reshape(test_image_array, (test_image_array.shape[0], 28, 28,))
+d_test_low_res_image_array = np.reshape(test_low_res_image_array, (test_low_res_image_array.shape[0], 14, 14))
 
 
 # Creates a plot to display our images
